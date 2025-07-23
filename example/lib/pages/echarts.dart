@@ -178,7 +178,7 @@ class EchartsPage extends StatelessWidget {
                         max: 15,
                         min: -3,
                         tickCount: 7,
-                        formatter: (v) => '${v.toInt()} ℃',
+                        formatter: (v, _) => '${v.toInt()} ℃',
                       ),
                     ),
                     'group': Variable(
@@ -333,7 +333,7 @@ class EchartsPage extends StatelessWidget {
                       scale: LinearScale(
                         max: 800,
                         min: 0,
-                        formatter: (v) => '${v.toInt()} W',
+                        formatter: (v, _) => '${v.toInt()} W',
                       ),
                     ),
                   },

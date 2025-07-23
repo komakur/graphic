@@ -11,7 +11,7 @@ class OrdinalScale extends DiscreteScale<String> {
     bool? inflate,
     double? align,
     String? title,
-    String? Function(String)? formatter,
+    String? Function(String, List<double>? visibleRange)? formatter,
     List<String>? ticks,
     int? tickCount,
   }) : super(
@@ -37,7 +37,7 @@ class OrdinalScaleConv extends DiscreteScaleConv<String, OrdinalScale> {
   ) : super(spec, tuples, variable);
 
   @override
-  String defaultFormatter(String value) => value;
+  String defaultFormatter(String value, List<double>? visibleRange) => value;
 
   @override
   bool operator ==(Object other) => other is OrdinalScaleConv && super == other;

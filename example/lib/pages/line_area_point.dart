@@ -109,7 +109,8 @@ class _LineAreaPointPageState extends State<LineAreaPointPage> {
                     'time': Variable(
                       accessor: (TimeSeriesSales datum) => datum.time,
                       scale: TimeScale(
-                        formatter: (time) => _monthDayFormat.format(time),
+                        formatter: (time, visibleRange) =>
+                            _monthDayFormat.format(time),
                       ),
                     ),
                     'sales': Variable(
@@ -118,7 +119,11 @@ class _LineAreaPointPageState extends State<LineAreaPointPage> {
                   },
                   marks: [
                     LineMark(
-                      shape: ShapeEncode(value: BasicLineShape(smooth: _smooth, stepped: _stepped, dash: [5, 2])),
+                      shape: ShapeEncode(
+                          value: BasicLineShape(
+                              smooth: _smooth,
+                              stepped: _stepped,
+                              dash: [5, 2])),
                       selected: {
                         'touchMove': {1}
                       },
@@ -186,12 +191,16 @@ class _LineAreaPointPageState extends State<LineAreaPointPage> {
                   },
                   marks: [
                     AreaMark(
-                      shape: ShapeEncode(value: BasicAreaShape(smooth: _smooth, stepped: _stepped)),
+                      shape: ShapeEncode(
+                          value: BasicAreaShape(
+                              smooth: _smooth, stepped: _stepped)),
                       color: ColorEncode(
                           value: Defaults.colors10.first.withAlpha(80)),
                     ),
                     LineMark(
-                      shape: ShapeEncode(value: BasicLineShape(smooth: _smooth, stepped: _stepped)),
+                      shape: ShapeEncode(
+                          value: BasicLineShape(
+                              smooth: _smooth, stepped: _stepped)),
                       size: SizeEncode(value: 0.5),
                     ),
                   ],
@@ -268,7 +277,9 @@ class _LineAreaPointPageState extends State<LineAreaPointPage> {
                     LineMark(
                       position:
                           Varset('date') * Varset('points') / Varset('name'),
-                      shape: ShapeEncode(value: BasicLineShape(smooth: _smooth, stepped: _stepped)),
+                      shape: ShapeEncode(
+                          value: BasicLineShape(
+                              smooth: _smooth, stepped: _stepped)),
                       size: SizeEncode(value: 0.5),
                       color: ColorEncode(
                         variable: 'name',

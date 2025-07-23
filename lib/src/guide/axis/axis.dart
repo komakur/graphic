@@ -239,13 +239,26 @@ class TickInfoOp extends Operator<List<TickInfo>> {
     final labelBackground = params['labelBackground'] as PaintStyle?;
     final labelBackgroundMapper =
         params['labelBackgroundMapper'] as LabelBackgroundMapper?;
+    final coord = params['coord'] as CoordConv;
+    final dim = params['dim'] as Dim;
 
     final scale = scales[variable]!;
+
+    if (coord is RectCoordConv) {
+      final canvasDim = coord.getCanvasDim(dim);
+      scale.visibleRange =
+          (canvasDim == Dim.x) ? coord.renderRangeX : coord.renderRangeY;
+    } else if (coord is PolarCoordConv) {
+      final canvasDim = coord.getCanvasDim(dim);
+      scale.visibleRange = (canvasDim == Dim.x)
+          ? [coord.startAngle, coord.endAngle]
+          : [coord.startRadius, coord.endRadius];
+    }
 
     final ticks = scale.ticks
         .map((value) => TickInfo(
               scale.normalize(scale.convert(value)),
-              scale.format(value),
+              scale.format(value, scale.visibleRange),
             ))
         .toList();
 

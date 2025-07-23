@@ -70,7 +70,7 @@ class CrosshairGuide {
   /// Convert the value to a [String] on the chart.
   ///
   /// If null, a default [Scale.format, Scale.format] is used.
-  List<String? Function(dynamic)?>? formatter;
+  List<String? Function(dynamic, List<double> visibleRange)?>? formatter;
 
   /// Whether the position for each dimension follows the pointer or stick to selected
   /// points.
@@ -139,7 +139,8 @@ class CrosshairRenderOp extends Render {
         params['labelBackgroundStyles'] as List<PaintStyle?>;
     final labelPaddings = params['labelPaddings'] as List<double>;
     final showLabel = params['showLabel'] as List<bool>;
-    final formatter = params['formatter'] as List<String? Function(dynamic)?>;
+    final formatter =
+        params['formatter'] as List<String? Function(dynamic, List<double>)?>;
     final followPointer = params['followPointer'] as List<bool>;
     final scales = params['scales'] as Map<String, ScaleConv>;
     final size = params['size'] as Size;
@@ -229,8 +230,13 @@ class CrosshairRenderOp extends Render {
           final scaleX = scales[fieldX];
           final denormalize = scaleX?.denormalize(cross.dx) ?? -1;
           final invert = scaleX?.invert(denormalize);
-          final text =
-              formatter[0]?.call(invert) ?? scaleX?.format(invert) ?? '';
+
+          final visibleRangeX =
+              coord.transposed ? coord.verticals : coord.horizontals;
+
+          final text = formatter[0]?.call(invert, visibleRangeX) ??
+              scaleX?.format(invert, visibleRangeX) ??
+              '';
           final rect = _getLabelBlock(text: text, style: labelStyleX);
 
           double posX = canvasCrossX;
@@ -278,8 +284,13 @@ class CrosshairRenderOp extends Render {
           final scaleY = scales[fieldY];
           final denormalize = scaleY?.denormalize(cross.dy) ?? -1;
           final invert = scaleY?.invert(denormalize);
-          final text =
-              formatter[1]?.call(invert) ?? scaleY?.format(invert) ?? '';
+
+          final visibleRangeY =
+              coord.transposed ? coord.horizontals : coord.verticals;
+
+          final text = formatter[1]?.call(invert, visibleRangeY) ??
+              scaleY?.format(invert, visibleRangeY) ??
+              '';
           final rect = _getLabelBlock(text: text, style: labelStyleY);
 
           double posY = canvasCrossY;
@@ -321,7 +332,15 @@ class CrosshairRenderOp extends Render {
           final fieldX = coord.transposed ? fields[2] : fields[0];
           final scaleX = scales[fieldX];
           final value = tuple[fieldX];
-          final text = formatter[0]?.call(value) ?? scaleX?.format(value) ?? '';
+
+          final visibleAngleRange = [
+            polarCoord.startAngle,
+            polarCoord.endAngle
+          ];
+
+          final text = formatter[0]?.call(value, visibleAngleRange) ??
+              scaleX?.format(value, visibleAngleRange) ??
+              '';
           final diagonal = _getLabelDiagonal(text: text, style: labelStyleX);
 
           final label = LabelElement(
@@ -356,8 +375,15 @@ class CrosshairRenderOp extends Render {
           final scaleY = scales[fieldY];
           final denormalize = scaleY?.denormalize(abstractRadius) ?? 0;
           final invert = scaleY?.invert(denormalize);
-          final text =
-              formatter[0]?.call(invert) ?? scaleY?.format(value) ?? '';
+
+          final visibleRadiusRange = [
+            polarCoord.startRadius,
+            polarCoord.endRadius
+          ];
+
+          final text = formatter[0]?.call(invert, visibleRadiusRange) ??
+              scaleY?.format(value, visibleRadiusRange) ??
+              '';
           final rect = _getLabelBlock(text: text, style: labelStyleY);
 
           final label = LabelElement(

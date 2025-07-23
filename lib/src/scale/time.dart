@@ -14,7 +14,7 @@ class TimeScale extends ContinuousScale<DateTime> {
     double? marginMin,
     double? marginMax,
     String? title,
-    String? Function(DateTime)? formatter,
+    String? Function(DateTime, List<double>? visibleRange)? formatter,
     List<DateTime>? ticks,
     int? tickCount,
   }) : super(
@@ -102,7 +102,8 @@ class TimeScaleConv extends ContinuousScaleConv<DateTime> {
   DateTime get zero => min!;
 
   @override
-  String defaultFormatter(DateTime value) => value.toString();
+  String defaultFormatter(DateTime value, List<double>? visibleRange) =>
+      value.toString();
 
   @override
   bool operator ==(Object other) => other is TimeScaleConv && super == other;
