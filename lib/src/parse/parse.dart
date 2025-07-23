@@ -285,6 +285,7 @@ void parse<D>(
   final scales = view.add(ScaleConvOp({
     'tuples': tuples,
     'specs': scaleSpecs,
+    'coord': coord,
   }));
 
   final scaleds = view.add(ScaleOp({
@@ -543,6 +544,8 @@ void parse<D>(
         'gridMapper': axisSpec.gridMapper,
         'labelBackground': axisSpec.labelBackground,
         'labelBackgroundMapper': axisSpec.labelBackgroundMapper,
+        'coord': coord,
+        'dim': dim,
       }));
 
       final axisScene = view.graffiti.createScene(

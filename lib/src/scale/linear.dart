@@ -17,7 +17,7 @@ class LinearScale extends ContinuousScale<num> {
     double? marginMin,
     double? marginMax,
     String? title,
-    String? Function(num)? formatter,
+    String? Function(num, List<double>? visibleRange)? formatter,
     List<num>? ticks,
     int? tickCount,
     bool? niceRange,
@@ -96,7 +96,8 @@ class LinearScaleConv extends ContinuousScaleConv<num> {
   num get zero => 0;
 
   @override
-  String defaultFormatter(num value) => value.toString();
+  String defaultFormatter(num value, List<double>? visibleRange) =>
+      value.toString();
 
   @override
   bool operator ==(Object other) => other is LinearScaleConv && super == other;

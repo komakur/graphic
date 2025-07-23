@@ -1,3 +1,6 @@
+import 'package:graphic/src/coord/coord.dart';
+import 'package:graphic/src/coord/polar.dart';
+import 'package:graphic/src/coord/rect.dart';
 import 'package:graphic/src/util/collection.dart';
 import 'package:graphic/src/dataflow/operator.dart';
 import 'package:graphic/src/guide/axis/axis.dart';
@@ -49,7 +52,7 @@ abstract class Scale<V, SV extends num> {
   /// Convert the value to a [String] on the chart.
   ///
   /// If null, a default [Object.toString] is used.
-  String? Function(V)? formatter;
+  String? Function(V value, List<double>? visibleRange)? formatter;
 
   /// Indicates the axis ticks directly.
   List<V>? ticks;
@@ -62,6 +65,11 @@ abstract class Scale<V, SV extends num> {
   /// If null, a default 5 will be set for [ContinuousScale] and [DiscreteScale]
   /// will show all ticks.
   int? tickCount;
+
+  /// The visible range of the coordinate dimension this scale belongs to.
+  ///
+  /// This is populated by the chart's view logic.
+  List<double> visibleRange = [0.0, 1.0];
 
   @override
   bool operator ==(Object other) =>
@@ -88,7 +96,7 @@ abstract class ScaleConv<V, SV extends num> extends Converter<V, SV> {
   ///
   /// This should not be directly used. Use method [format] insead to avoid generic
   /// problems.
-  late String? Function(V) formatter;
+  late String? Function(V value, List<double>? visibleRange) formatter;
 
   /// The scale ticks.
   late List<V> ticks;
@@ -111,6 +119,8 @@ abstract class ScaleConv<V, SV extends num> extends Converter<V, SV> {
   /// points.
   double get normalZero => normalize(convert(zero));
 
+  List<double> visibleRange = [0.0, 1.0];
+
   /// The zero of [V].
   @protected
   V get zero;
@@ -118,11 +128,12 @@ abstract class ScaleConv<V, SV extends num> extends Converter<V, SV> {
   /// Formats a value to string.
   ///
   /// This is a method wrapper of [formatter] to avoid generic problems.
-  String? format(V value) => formatter(value);
+  String? format(V value, List<double>? visibleRange) =>
+      formatter(value, visibleRange);
 
   /// The default formatter of [V] for [formatter].
   @protected
-  String defaultFormatter(V value);
+  String defaultFormatter(V value, List<double>? visibleRange);
 
   @override
   bool operator ==(Object other) =>
@@ -139,6 +150,7 @@ class ScaleConvOp extends Operator<Map<String, ScaleConv>> {
   Map<String, ScaleConv> evaluate() {
     final tuples = params['tuples'] as List<Tuple>;
     final specs = params['specs'] as Map<String, Scale>;
+    final coord = params['coord'] as CoordConv;
 
     final rst = <String, ScaleConv>{};
     for (var name in specs.keys) {
@@ -151,6 +163,22 @@ class ScaleConvOp extends Operator<Map<String, ScaleConv>> {
       } else if (specs[name] is TimeScale) {
         final spec = specs[name] as TimeScale;
         rst[name] = TimeScaleConv(spec, tuples, name);
+      }
+    }
+
+    if (rst.isNotEmpty) {
+      // Determine the field names for horizontal and vertical dimensions.
+      final hField = coord.transposed ? rst.keys.elementAt(1) : rst.keys.first;
+      final vField = coord.transposed ? rst.keys.first : rst.keys.elementAt(1);
+
+      if (coord is RectCoordConv) {
+        // For rectangular coordinates, assign the `horizontals`/`verticals` lists.
+        rst[hField]?.visibleRange = coord.renderRangeX;
+        rst[vField]?.visibleRange = coord.renderRangeY;
+      } else if (coord is PolarCoordConv) {
+        // For polar coordinates, create the lists from the angle/radius properties.
+        rst[hField]?.visibleRange = [coord.startAngle, coord.endAngle];
+        rst[vField]?.visibleRange = [coord.startRadius, coord.endRadius];
       }
     }
     return rst;
@@ -173,5 +201,34 @@ class ScaleOp extends Operator<List<Scaled>> {
       }
       return scaled;
     }).toList();
+  }
+}
+
+// In lib/src/scale/scale.dart, add this new class at the end of the file.
+
+/// A helper operator to link the coordinate's visible range to the scales.
+///
+/// This runs for its side effect and its output is not used.
+class LinkScaleRangeOp extends Operator<void> {
+  LinkScaleRangeOp(Map<String, dynamic> params) : super(params);
+
+  @override
+  void evaluate() {
+    final scales = params['scales'] as Map<String, ScaleConv>;
+    final hRange = params['hRange'] as List<double>;
+    final vRange = params['vRange'] as List<double>;
+    final isTransposed = params['isTransposed'] as bool;
+
+    if (scales.isEmpty) {
+      return;
+    }
+
+    // Determine the field names for horizontal and vertical dimensions.
+    final hField = isTransposed ? scales.keys.elementAt(1) : scales.keys.first;
+    final vField = isTransposed ? scales.keys.first : scales.keys.elementAt(1);
+
+    // Assign the correct normalized zoom range to each scale object.
+    scales[hField]?.visibleRange = hRange;
+    scales[vField]?.visibleRange = vRange;
   }
 }

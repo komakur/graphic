@@ -80,8 +80,8 @@ class RectCoordConv extends CoordConv {
     int dimCount,
     double dimFill,
     bool transposed,
-    List<double> renderRangeX,
-    List<double> renderRangeY,
+    this.renderRangeX,
+    this.renderRangeY,
   )   : horizontals = [
           region.left + region.width * renderRangeX.first,
           region.left + region.width * renderRangeX.last,
@@ -91,6 +91,9 @@ class RectCoordConv extends CoordConv {
           region.bottom - region.height * renderRangeY.last,
         ],
         super(dimCount, dimFill, transposed, region);
+
+  final List<double> renderRangeX;
+  final List<double> renderRangeY;
 
   /// Horizontal boundaries of the coordinate.
   final List<double> horizontals;

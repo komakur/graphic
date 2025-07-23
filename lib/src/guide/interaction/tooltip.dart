@@ -281,12 +281,12 @@ class TooltipRenderOp extends Render {
         var field = fields.first;
         var scale = scales[field]!;
         var title = scale.title;
-        textContent += '$title: ${scale.format(tuple[field])}';
+        textContent += '$title: ${scale.format(tuple[field], null)}';
         for (var i = 1; i < fields.length; i++) {
           field = fields[i];
           scale = scales[field]!;
           title = scale.title;
-          textContent += '\n$title: ${scale.format(tuple[field])}';
+          textContent += '\n$title: ${scale.format(tuple[field], null)}';
         }
       } else {
         final groupField = selectionSpec.variable;
@@ -307,9 +307,9 @@ class TooltipRenderOp extends Render {
         assert(fields.length == 2);
 
         if (groupField != null) {
-          textContent +=
-              scales[groupField]!.format(selectedTupleList.first[groupField]) ??
-                  '';
+          textContent += scales[groupField]!
+                  .format(selectedTupleList.first[groupField], null) ??
+              '';
         }
         for (var tuple in selectedTupleList) {
           final domainField = fields.first;
@@ -317,7 +317,7 @@ class TooltipRenderOp extends Render {
           final domainScale = scales[domainField]!;
           final measureScale = scales[measureField]!;
           textContent +=
-              '\n${domainScale.format(tuple[domainField])}: ${measureScale.format(tuple[measureField])}';
+              '\n${domainScale.format(tuple[domainField], null)}: ${measureScale.format(tuple[measureField], null)}';
         }
       }
 
